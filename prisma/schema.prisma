@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                              String    @id @default(uuid())
+  fullName                        String?     
+  username                        String    @unique
+  phone                           String    @unique
+  email                           String    @unique
+  password                        String
+  avatar                          String?
+  role                            Role?     @default(user)
+  salary                          BigInt?
+  isActive                        Boolean   @default(false)
+  emailVerified                   Boolean   @default(false)
+  currentLocation                 String?
+  emailVerificationToken          String?
+  emailVerificationTokenExpires   String?   // DateTime sifatida qoldiring
+  joinDate                        DateTime?  @default(now())
+  endDate                         DateTime?  @updatedAt
+}
+
+
+model Token {
+  user                            String    @db.Uuid
+  accessToken                     String
+  refreshToken                    String
+
+  @@id([user, accessToken])
+  @@map("tokens")
+}
+
+model Salary {
+  user                            String    @db.Uuid
+  lastMonth                       BigInt
+  total                           BigInt
+
+  @@id([user, lastMonth])
+  @@map("salary")
+}
+
+model Trailer {
+  id                              String    @id @default(uuid()) @db.Uuid
+  trailerNum                      String
+  currentLocation                 String?
+  owner                           String    @db.Uuid
+
+  @@map("trailers")
+}
+
+model Vehicle {
+  id                              String    @id @default(uuid()) @db.Uuid
+  owner                           String    @db.Uuid
+  driver                          String?   @db.Uuid
+  currentLocation                 String
+  vehicleNum                      String
+  trailer                         String    @db.Uuid
+
+  @@map("vehicle")
+}
+
+model Load {
+  id                              String    @id @default(uuid())
+  loadOwner                       String    @db.Uuid
+  dispatcher                      String    @db.Uuid
+  driver                          String    @db.Uuid
+  price                           BigInt
+  pickUpAddr                      String
+  deliveryAddr                    String
+  status                          LoadStatus
+
+  @@map("loads")
+}
+
+model File {
+  id                              String    @id @default(uuid()) @db.Uuid
+  filename                        String
+  path                            String
+  belongsTo                       String    @db.Uuid
+
+  @@map("files")
+}
+
+enum LoadStatus {
+  loading
+  inTransit
+  delivered
+}
+
+enum Role {
+  user
+  driver
+  dispatcher
+  manager
+  owner
+}
